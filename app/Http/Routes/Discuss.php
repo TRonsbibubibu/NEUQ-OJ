@@ -6,12 +6,15 @@
  * Time: 下午10:50
  */
 
-Route::post('/topic/create','DiscussionController@addTopic');
-Route::get('/topic/delete','DiscussionController@deleteTopic');
-Route::post('/topic/update','DiscussionController@updateTopic');
 Route::post('/topic/search','DiscussionController@searchTopic');
 
-Route::post('/reply/create','DiscussionController@addReply');
+Route::group(['middleware' => 'token'], function() {
+    Route::post('/topic/create','DiscussionController@addTopic');
+    Route::post('/topic/delete/{id}','DiscussionController@deleteTopic');
+    Route::post('/topic/update/{id}','DiscussionController@updateTopic');
 
-Route::get('/topic/stick','DiscussionController@stick');
-Route::get('/topic/unstick','DiscussionController@unstick');
+    Route::post('/reply/create/{father}','DiscussionController@addReply');
+
+    Route::post('/topic/stick/{id}','DiscussionController@stick');
+    Route::post('/topic/unstick/{id}','DiscussionController@unstick');
+});

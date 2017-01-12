@@ -11,8 +11,9 @@ namespace NEUQOJ\Services;
 use NEUQOJ\Exceptions\UserNotExistException;
 use NEUQOJ\Repository\Eloquent\DiscussionRepository;
 use NEUQOJ\Services\Contracts\DiscussionInterface;
+use NEUQOJ\Services\Contracts\DiscussionServiceInterface;
 
-class DiscussionService implements DiscussionInterface
+class DiscussionService implements DiscussionServiceInterface
 {
     private $discussionRepo;
     private $userService;
@@ -42,17 +43,17 @@ class DiscussionService implements DiscussionInterface
 
     public function addTopic(array $data):bool
     {
-        $this->discussionRepo->insert($data);
+        return $this->discussionRepo->insert($data);
     }
 
     public function deleteTopic(int $topicId):bool
     {
-        $this->discussionRepo->delete($topicId);
+        return $this->discussionRepo->deleteWhere(['id' => $topicId]) == 1;
     }
 
     public function updateTopic(int $topicId, array $condition):bool
     {
-        $this->discussionRepo->update($condition , $topicId);
+        return $this->discussionRepo->update($condition , $topicId);
     }
 
 //    public function searchTopicByAuthor(string $authorName)
@@ -98,7 +99,7 @@ class DiscussionService implements DiscussionInterface
     {
         $topic = $this->discussionRepo->get($topicId)->first();
         if($topic != null) {
-            $data = ['stick' => 0];
+            $data = ['stick' => 1];
             return $this->discussionRepo->update($data, $topicId) == 1;
         } else {
             throw new TopicNotExistException();

@@ -8,8 +8,7 @@
 
 namespace NEUQOJ\Services\Contracts;
 
-
-interface DiscussionInterface
+interface DiscussionServiceInterface
 {
     function isTopicCreator(int $topicId,int $userId):bool;
 

@@ -30,27 +30,29 @@ class DiscussionController extends Controller
             'content' => 'required'
         ]);
 
-        if($validator->failes())
+        if($validator->fails())
             throw new FormValidatorException($validator->getMessageBag()->all());
 
         $data = [
             'title' => $request->title,
             'content' => $request->get('content'),
-            'problem_id' => $request->problem_id,
+            //'problem_id' => $request->problem_id,
             'user_id' => $request->user->id,
             'father' => 0,
         ];
 
-        $topic = $this->discussionService->addTopic($data);
+        if($this->discussionService->addTopic($data)) {
+            return response()->json([
+                "code" => 0,
+                "data" => [
+                    //'problem_id' => $topic->problem_id,
+                    'user_id' => $request->user->id,
+                    'title' => $request->title
+                ],
+            ]);
+        }
 
-        return response()->json([
-            "code" => 0,
-            "data" => [
-                'problem_id' => $topic->problem_id,
-                'user_id' => $topic->user_id,
-                'title' => $topic->title
-            ],
-        ]);
+
     }
 
     public function deleteTopic(Request $request,$topicId)
@@ -83,12 +85,20 @@ class DiscussionController extends Controller
         if($validator->fails())
             throw new FormValidatorException($validator->getMessageBag()->all());
 
-        $data = [
-            'title' => $request->title,
-            'content' => $request->get('content'),
-            'problem_id' => $request->problem_id,
-            'user_id' => $request->user->id,
-        ];
+        if($request->title != null) {
+            $data = [
+                'title' => $request->title,
+                'content' => $request->get('content'),
+                //'problem_id' => $request->problem_id,
+                'user_id' => $request->user->id,
+            ];
+        } else {
+            $data = [
+                'content' => $request->get('content'),
+                //'problem_id' => $request->problem_id,
+                'user_id' => $request->user->id,
+            ];
+        }
 
         //检查是否为创帖者
         if($this->discussionService->isTopicCreator($topicId,$userId)) {
@@ -111,7 +121,7 @@ class DiscussionController extends Controller
             'title' => 'required|max:30'
         ]);
 
-        if($validator->falis())
+        if($validator->fails())
             throw new FormValidatorException($validator->getMessageBags()->all());
 
         $size = $request->input('size',10);
@@ -139,27 +149,26 @@ class DiscussionController extends Controller
             'content' => 'required'
         ]);
 
-        if($validator->failes())
+        if($validator->fails())
             throw new FormValidatorException($validator->getMessageBag()->all());
 
         $data = [
             'content' => $request->get('content'),
-            'problem_id' => $request->problem_id,
+            //'problem_id' => $request->problem_id,
             'user_id' => $request->user->id,
             'father' => $father,
         ];
 
-        $topic = $this->discussionService->addTopic($data);
-
-        return response()->json([
-            "code" => 0,
-            "data" => [
-                'problem_id' => $topic->problem_id,
-                'user_id' => $topic->user_id,
-                'title' => $topic->title,
-                'father' => $topic->father
-            ],
-        ]);
+        if($this->discussionService->addTopic($data)) {
+            return response()->json([
+                "code" => 0,
+                "data" => [
+                    //'problem_id' => $topic->problem_id,
+                    'user_id' => $request->user->id,
+                    'father' => $request->father
+                ],
+            ]);
+        }
     }
 
 
