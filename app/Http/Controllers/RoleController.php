@@ -35,7 +35,7 @@ class RoleController extends Controller
          */
         $validator = Validator::make($request->all(), [
             'role' => 'required|max:30',
-            'privilege'=>'required',
+            'privilegeId'=>'required',
             'description'=>'required|max:100',
             'user'=>'required'
         ]);
@@ -61,13 +61,13 @@ class RoleController extends Controller
         if(!($privilegeService->hasNeededPrivilege('operate-role',$request->user['id'])))
             throw new PrivilegeNotExistException();
 
-
+        //$privilege = $privilegeService->getPrivilegeDetailBy('id',$request->privilegeId,['name']);
         $data = array(
             'role'=>$request->get('role'),
-            'privilege'=>$request->get('privilege'),
+            'privilege'=>$request->privilegeId,
             'description'=>$request->get('description'),
         );
-        if($roleService->createRole($data))
+        if($roleService->createRole($data)!=-1)
             return response()->json([
                 'code' => 0
             ]);

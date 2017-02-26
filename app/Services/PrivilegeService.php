@@ -27,10 +27,11 @@ class PrivilegeService
         $this->userPriRepo = $usrPriRepository;
     }
 
-    public function getPrivilegeDetailByName(string $name,array $columns = ['*'])
+    public function getPrivilegeDetailBy(string $param,string $value,array $columns = ['*'])
     {
-        return $this->priRepo->getBy('name',$name,$columns)->first();
+        return $this->priRepo->getBy($param,$value,$columns)->first();
     }
+
 
     /*
      * 获取角色对应的权利
@@ -83,7 +84,7 @@ class PrivilegeService
     public function hasNeededPrivilege(string $privilegeNeeded,$user_id)
     {
 
-        $arr = $this->getPrivilegeDetailByName($privilegeNeeded);
+        $arr = $this->getPrivilegeDetailBy('name',$privilegeNeeded,['id']);
 
         if(!$arr)
             throw new PrivilegeNotExistException();

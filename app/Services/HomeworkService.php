@@ -25,7 +25,7 @@ class HomeworkService implements HomeworkServiceInterface
     private $userGroupService;
     private $problemGroupRelationRepo;
     private $problemService;
-    private $problemAdmissionRepo;
+
     private $problemGroupRepo;
     private $solutionRepo;
     private $cacheService;
@@ -33,7 +33,6 @@ class HomeworkService implements HomeworkServiceInterface
     public function __construct(
         ProblemGroupService $problemGroupService,UserGroupService $userGroupService,
         ProblemGroupRelationRepository $problemGroupRelationRepository,ProblemService $problemService,
-        ProblemGroupAdmissionRepository $problemGroupAdmissionRepository,
         ProblemGroupRepository $problemGroupRepository,SolutionRepository $solutionRepository,CacheService $cacheService
     )
     {
@@ -41,7 +40,7 @@ class HomeworkService implements HomeworkServiceInterface
         $this->problemGroupService = $problemGroupService;
         $this->problemService = $problemService;
         $this->userGroupService = $userGroupService;
-        $this->problemAdmissionRepo =$problemGroupAdmissionRepository;
+
         $this->problemGroupRepo = $problemGroupRepository;
         $this->solutionRepo = $solutionRepository;
         $this->cacheService = $cacheService;
@@ -147,7 +146,7 @@ class HomeworkService implements HomeworkServiceInterface
         return $data;
     }
 
-    public function addHomework(User $user, int $userGroupId, array $data, array $problems):int
+    public function addHomework(array $user, int $userGroupId, array $data, array $problems):int
     {
         $data['type'] = 2;
         $id = -1;

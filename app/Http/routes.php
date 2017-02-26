@@ -14,7 +14,7 @@
 
 include 'Routes/UserGroup.php';
 
-//include 'Routes/Test.php';
+include 'Routes/Test.php';
 
 include 'Routes/User.php';
 
@@ -29,6 +29,8 @@ include 'Routes/Problem.php';
 include 'Routes/Status.php';
 
 include 'Routes/Contest.php';
+
+include 'Routes/Role.php';
 
 Route::get('/', function () {
     return 'here is the main page!!';

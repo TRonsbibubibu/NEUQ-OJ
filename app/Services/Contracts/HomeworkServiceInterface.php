@@ -25,7 +25,7 @@ interface HomeworkServiceInterface
     function getHomeworksInGroup(int $groupId);
 
     //添加，权限的检查放在controller里
-    function addHomework(User $user,int $userGroupId,array $data,array $problems):int;
+    function addHomework(array $user,int $userGroupId,array $data,array $problems):int;
 
     //修改
     function updateHomeworkInfo(int $homeworkId,array $data):bool;

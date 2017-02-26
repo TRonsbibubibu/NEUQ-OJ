@@ -11,7 +11,7 @@ namespace NEUQOJ\Http\Controllers;
 
 use NEUQOJ\Exceptions\InnerError;
 use NEUQOJ\Exceptions\ProblemGroup\HomeworkNotExistException;
-use NEUQOJ\Http\Requests\Request;
+use Illuminate\Http\Request;
 use NEUQOJ\Services\HomeworkService;
 use NEUQOJ\Services\UserService;
 
@@ -136,7 +136,7 @@ class HomeworkController extends Controller
 
         $solutionId = $this->homeworkService->submitProblem($request->user->id,$homeworkId,$problemNum,$data);
         if(!$solutionId)
-            throw new InnerError("Fail to Submit :contest ".$contestId." problem ".$problemNum);
+            throw new InnerError("Fail to Submit :contest ".$homeworkId." problem ".$problemNum);
 
         return response()->json([
             'code' => 0,
@@ -152,7 +152,7 @@ class HomeworkController extends Controller
             'title' => 'required|string|max:100',
             'start_time' => 'required|date',
             'end_time' => 'required|date',
-            'user_Group_id'=>'required|integer',
+            'user_group_id'=>'required|integer',
             'langmask' => 'array',
             'problems' => 'required|array',
             'users' => 'array'
@@ -170,8 +170,8 @@ class HomeworkController extends Controller
             'end_time' => $request->input('end_time'),
             'creator_id' => $request->user->id,
             'creator_name' => $request->user->name,
+            'user_group_id'=>$request->input('user_group_id'),
 
-            'password' => md5($request->input('password')),
             'langmask' => $request->input('langmask')
         ];
         $problemIds = $request->input('problems');

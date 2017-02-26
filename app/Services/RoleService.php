@@ -10,6 +10,7 @@ namespace NEUQOJ\Services;
 
 
 use Illuminate\Support\Facades\DB;
+use NEUQOJ\Exceptions\PrivilegeNotExistException;
 use NEUQOJ\Repository\Eloquent\PrivilegeRepository;
 use NEUQOJ\Repository\Eloquent\RolePriRepository;
 use NEUQOJ\Repository\Eloquent\RoleRepository;
@@ -66,9 +67,11 @@ class RoleService implements RoleServiceInterface
         $rid = -1;
 
         //检查输入合法性
-        $privileges = $this->PriRepo->getIn('id',$data['privilege']);
-        if(count($data['privilege']!=count($privileges)))
-            return $rid;
+        $privileges = $this->PriRepo->getIn('id',$data['privilege'],['id']);
+        //dd(count($privileges));
+        //dd(count($data['privilege']));
+        if(count($data['privilege'])!=count($privileges))
+            throw new PrivilegeNotExistException();
 
 
         //创建事件，对数据库操作的有哪项失败的话就自动回滚
@@ -91,7 +94,7 @@ class RoleService implements RoleServiceInterface
                 $this->RolePrRepo->insert($relations);
             }
         );
-
+        dd($rid);
         return $rid;
     }
     /*

@@ -8,14 +8,13 @@
 
 namespace NEUQOJ\Repository\Eloquent;
 
-
-use NEUQOJ\Repository\Traits\InsertWithId;
+use NEUQOJ\Repository\Traits\InsertWithIdTrait;
 
 class RoleRepository extends AbstractRepository
 {
-    function Model()
+    function model()
     {
         return "NEUQOJ\Repository\Models\Role";
     }
-    use InsertWithId;
+    use InsertWithIdTrait;
 }
