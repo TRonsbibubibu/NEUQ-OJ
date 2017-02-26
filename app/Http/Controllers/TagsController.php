@@ -21,7 +21,8 @@ use NEUQOJ\Services\TagsService;
 class TagsController extends Controller
 {
 
-    public function createTag(Request $request,TagsService $tagsService)
+
+    public function createTag(Request $request, TagsService $tagsService)
     {
        //表单认证
         $validator = Validator::make($request->all(), [
@@ -51,50 +52,27 @@ class TagsController extends Controller
             ]);
 
     }
-    public function deleteTag(Request $request,TagsService $tagsService)
+    public function deleteTag(TagsService $tagsService,int $tagId)
     {
-        //表单认证
-        $validator = Validator::make($request->all(), [
-            'tagId' => 'required',
-        ]);
 
-        if($validator->fails())
-        {
-            $data = $validator->getMessageBag()->all();
-            throw new FormValidatorException($data);
-        }
         //判断要删除的tag是否存在
-        if ($tagsService->getTagById($request->tagId)==null)
+        if ($tagsService->getTagById($tagId)==null)
             throw new TagNotExistException();
 
-        if($tagsService->deleteTags($request->tagId))
+        if($tagsService->deleteTags($tagId))
             return response()->json(
                 [
                     'code'=>0
                 ]
             );
     }
-    public function giveTagTo(Request $request,TagsService $tagsService)//直接用TagId给予问题标签
+    public function giveTagTo(TagsService $tagsService,int $tagId,int $problemId)//直接用TagId给予问题标签
     {
-        //表单认证
-        $validator = Validator::make($request->all(), [
-            'tagId' => 'required',
-            'problemId'=>'required'
-        ]);
 
-        if($validator->fails())
-        {
-            $data = $validator->getMessageBag()->all();
-            throw new FormValidatorException($data);
-        }
-
-
-
-        $tagId = $request->tagId;
-            if($tagsService->hasTags($tagId,$request->problemId))//判断这道题是否已经有该标签了
+            if($tagsService->hasTags($tagId,$problemId))//判断这道题是否已经有该标签了
                 throw new TagsExistExceptios();
             else
-                $tagsService->giveTagsTo($tagId,$request->problemId);
+                $tagsService->giveTagsTo($tagId,$problemId);
 
         return response()->json(
             [
@@ -103,11 +81,10 @@ class TagsController extends Controller
         );
     }
 
-    function updateTag(Request $request,TagsService $tagsService)
+    function updateTag(Request $request,TagsService $tagsService,int $tagId)
     {
         //表单认证
         $validator = Validator::make($request->all(), [
-            'tagId' => 'required',
             'name'=>'required|max:45'
         ]);
 
@@ -118,7 +95,7 @@ class TagsController extends Controller
         }
 
         //判断要删除的tag是否存在
-        if ($tagsService->getTagById($request->tagId)==null)
+        if ($tagsService->getTagById($tagId)==null)
             throw new TagNotExistException();
 
         //判断要修改的tag内容是否存在,或者未改变
@@ -126,7 +103,7 @@ class TagsController extends Controller
         if($tagId != -1)
             throw new TagsExistExceptios();
 
-        if($tagsService->updateTags($request->tagId,$request->name))
+        if($tagsService->updateTags($tagId,$request->name))
             return response()->json(
                 [
                     'code'=>0
@@ -134,13 +111,11 @@ class TagsController extends Controller
             );
     }
 
-    public function updateProblemTag(Request $request,TagsService $tagsService)
+    public function updateProblemTag(Request $request,TagsService $tagsService,int $tagId,int $problemId)
     {
         //表单认证
         $validator = Validator::make($request->all(), [
-            'tagId' => 'required',
             'tags'=>'required|max:45',
-            'problemId'=>'required'
         ]);
 
         if($validator->fails())
@@ -149,24 +124,24 @@ class TagsController extends Controller
             throw new FormValidatorException($data);
         }
 
+
         //判断要删除的tag是否存在
-        if ($tagsService->getTagById($request->tagId)==null)
+        if ($tagsService->getTagById($tagId)==null)
             throw new TagNotExistException();
 
 
-        if(($tagsService->updateProblemTag($request->tagId,$request->problemId,$request->tags)))
+        if(($tagsService->updateProblemTag($tagId,$problemId,$request->tags)))
             return response()->json([
                 'code'=>0
             ]);
 
     }
 
-    public function createProblemTag(Request $request,TagsService $tagsService)
+    public function createProblemTag(Request $request,TagsService $tagsService,int $problemId)
     {
         //表单认证
         $validator = Validator::make($request->all(), [
             'tags'=>'required|max:45',
-            'problemId'=>'required'
         ]);
 
         if($validator->fails())
@@ -175,7 +150,7 @@ class TagsController extends Controller
             throw new FormValidatorException($data);
         }
 
-        if($tagsService->createProblemTag($request->problemId,$request->tags))
+        if($tagsService->createProblemTag($problemId,$request->tags))
             return response()->json(
                 [
                     'code'=>0
@@ -183,20 +158,10 @@ class TagsController extends Controller
             );
     }
 
-    public function deleteProblemTag(Request $request,TagsService $tagsService)
+    public function deleteProblemTag(TagsService $tagsService,int $tagId,int $problemId)
     {
-        $validator = Validator::make($request->all(),[
-            'problemId'=>'required',
-            'tagId'=>'required'
-        ]);
 
-        if($validator->fails())
-        {
-            $data = $validator->getMessageBag()->all();
-            throw new FormValidatorException($data);
-        }
-
-        if ($tagsService->deleteProblemTag($request->tagId,$request->problemId))
+        if ($tagsService->deleteProblemTag($tagId,$problemId))
             return response()->json(
                 [
                     'code'=>0

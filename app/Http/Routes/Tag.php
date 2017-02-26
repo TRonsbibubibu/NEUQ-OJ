@@ -7,12 +7,13 @@
  */
 
 
-Route::post('/tag/updateTag','TagsController@updateTag');
+Route::post('/tag/updateTag/{Tid}','TagsController@updateTag');
 Route::post('/tag/createTag','TagsController@createTag');
-Route::post('/tag/deleteTag','TagsController@deleteTag');
-Route::post('/tag/createProblemTag','TagsController@createProblemTag');
-Route::post('/tag/deleteProblemTag','TagsController@deleteProblemTag');
-Route::post('/tag/updateProblemTag','TagsController@updateProblemTag');
-Route::post('/tag/giveTagTo','TagsController@giveTagTo');
+Route::get('/tag/deleteTag/{Tid}','TagsController@deleteTag');
+Route::post('/tag/createProblemTag/{Pid}','TagsController@createProblemTag');
+Route::get('/tag/{Tid}/deleteProblemTag/{Pid}','TagsController@deleteProblemTag');
+Route::post('/tag/{Tid}/updateProblemTag/{Pid}','TagsController@updateProblemTag');
+Route::post('/tag/{Tid}/updateTag','TagsController@updateProblemTag');
+Route::post('/tag/{Tid}/giveTagToProblem/{Pid}','TagsController@giveTagTo');
 Route::get('/tag/getSameTagProblem','TagsController@getSameTagProblem');
 Route::get('/tag/getSameSourceProblem','TagsController@getSameSourceProblem');
