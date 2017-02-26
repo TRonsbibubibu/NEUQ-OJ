@@ -11,6 +11,8 @@ Route::get('/user-groups','UserGroup\UserGroupController@getGroups');
 
 Route::group(['middleware' => 'token'],function (){
 
+    Route::get('/user/groups','UserGroup\UserGroupController@getGroupsUserIn');
+
     Route::group(['prefix' => 'user-group'],function(){
         Route::post('/create','UserGroup\UserGroupController@createNewGroup');
         Route::get('/{id}','UserGroup\UserGroupController@getIndex');
@@ -27,10 +29,14 @@ Route::group(['middleware' => 'token'],function (){
             Route::get('/show/{id}','UserGroup\NoticeController@getNotice');
             Route::get('/get','UserGroup\NoticeController@getGroupNotices');
             Route::post('/delete/{id}','UserGroup\NoticeController@deleteNotice');
-            Route::post('update/{id}','UserGroup\NoticeController@updateNotice');
+            Route::post('/update/{id}','UserGroup\NoticeController@updateNotice');
         });
+
+        Route::post('{id}/add-homework','HomeworkController@addHomework');
+        Route::get('{id}/homeworks','HomeworkController@getHomeworks');
     });
 });
+
 
 //Route::group(['middleware' => 'token'],function(){
 //    Route::resource('user-groups','UserGroupController',

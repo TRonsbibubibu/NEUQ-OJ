@@ -32,8 +32,8 @@ class SolutionController extends Controller
             'page' => 'integer|min:1',
             'size' => 'integer|min:1',
             'problem_id' => 'integer',
-            'result' => 'integer',
-            'language' => 'integer',
+            'result' => 'integer|min:0|max:12',
+            'language' => 'integer|min:0|max:17',
             'user_id' => 'integer'
         ]);
 
@@ -70,7 +70,7 @@ class SolutionController extends Controller
         if($compileInfo==null)
             throw new CompileInfoNotExistException();
 
-        return response()->josn([
+        return response()->json([
             'code' => 0,
             'data' => $compileInfo
         ]);
@@ -83,7 +83,7 @@ class SolutionController extends Controller
         if($runtimeInfo==null)
             throw new RuntimeInfoNotExistException();
 
-        return response()->josn([
+        return response()->json([
             'code' => 0,
             'data' => $runtimeInfo
         ]);

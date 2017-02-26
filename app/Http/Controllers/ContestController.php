@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
+use NEUQOJ\Common\Utils;
 use NEUQOJ\Exceptions\FormValidatorException;
 use NEUQOJ\Exceptions\PasswordErrorException;
 use NEUQOJ\Exceptions\ProblemGroup\ContestNotExistException;
@@ -99,7 +100,11 @@ class ContestController extends Controller
     {
         $validator = Validator::make($request->all(),[
             'page' => 'integer|min:1',
-            'size' => 'integer|min:1|max:100'
+            'size' => 'integer|min:1|max:100',
+            'result' => 'integer|min:0|max:12',
+            'language' => 'integer|min:0|max:17',
+            'user_id' => 'integer',
+            'problem_num' => 'integer|min:0'
         ]);
 
         if($validator->fails())
@@ -107,6 +112,16 @@ class ContestController extends Controller
 
         $page = $request->input('page',1);
         $size = $request->input('size',20);
+        $problemNum = $request->input('problem_num',-1);
+        $result = $request->input('result',-1);
+        $language = $request->input('language',-1);
+        $userId = $request->input('user_id',-1);
+
+        $condition = [];
+        if($problemNum != -1) $condition['problem_num'] = $problemNum;
+        if($result!=-1) $condition['result'] = $result;
+        if($language!=-1) $condition['language'] = $language;
+        if($userId!=-1) $condition['user_id'] = $userId;
 
         if(!$this->contestService->isContestExist($contestId))
             throw new ContestNotExistException();
@@ -117,7 +132,7 @@ class ContestController extends Controller
         if(!$this->contestService->canUserAccessContest($userId,$contestId))
             throw new NoPermissionException();
 
-        $solutions = $this->contestService->getStatus($contestId,$page,$size);
+        $solutions = $this->contestService->getStatus($contestId,$page,$size,$condition);
 
         $solutions['code'] = 0;
 
@@ -204,8 +219,8 @@ class ContestController extends Controller
     {
         $validator = Validator::make($request->all(),[
             'title' => 'required|string|max:100',
-            'start_time' => 'required|date',
-            'end_time' => 'required|date',
+            'start_time' => 'required|date|after:now',
+            'end_time' => 'required|date|after:start_time',
             'private' => 'required|min:0|max:2',
             'password' => 'string',
             'langmask' => 'array',
@@ -228,7 +243,7 @@ class ContestController extends Controller
             'creator_id' => $request->user->id,
             'creator_name' => $request->user->name,
             'private' => $request->input('private'),
-            'password' => md5($request->input('password')),
+            'password' => Utils::pwGen($request->input('password')),
             'langmask' => $request->input('langmask')
         ];
 
@@ -275,15 +290,22 @@ class ContestController extends Controller
     {
         $validator = Validator::make($request->all(),[
             'title' => 'string|max:100',
-            'start_time' => 'date',
-            'end_time' => 'date',
-            'langmask' => 'array'
+            'start_time' => 'date|after:now',
+            'end_time' => 'date|after:start_time',
+            'langmask' => 'array',
+            'private' => 'integer|min:0|max:2',
+            'password' => 'string|min:6|max:20',
+            'users' => 'array',
+            'user_password' => 'required|string|min:6|max:20'
         ]);
 
         if($validator->fails())
             throw new FormValidatorException($validator->getMessageBag()->all());
 
-        //TODO 检查是否是创建者或者管理员,考虑重新检测密码
+        //为危险动作检查密码
+        if(!Utils::pwCheck($request->input('user_password'),$request->user->password))
+            throw new PasswordErrorException();
+        //TODO 检查是否是管理员
         if(!$this->contestService->isUserContestCreator($contestId,$request->user->id))
             throw new NoPermissionException();
 
@@ -291,6 +313,9 @@ class ContestController extends Controller
         $startTime = $request->input('start_time',null);
         $endTime = $request->input('end_time',null);
         $langmask = $request->input('langmask',null);
+        $users = $request->input('users',null);
+        $private = $request->input('private',null);
+        $password = $request->input('password',null);
 
         $newInfo = [];
 
@@ -298,12 +323,22 @@ class ContestController extends Controller
         if($startTime!=null) $newInfo['start_time'] = $startTime;
         if($endTime!=null) $newInfo['end_time'] = $endTime;
         if($langmask!=null) $newInfo['langmask'] = $langmask;
+        if($private!=null) $newInfo['private'] = $private;
+        if($password!=null) $newInfo['password'] = Utils::pwGen($password);
 
         if(!empty($newInfo))
         {
             if(!$this->contestService->updateContestInfo($contestId,$newInfo))
                 throw new InnerError("Fail to update contest :".$contestId);
         }
+
+        if($users!=null)
+        {
+            if(!$this->contestService->resetContestPermission($contestId,$users))
+                throw new InnerError("Fail to update contest permission");
+        }
+
+        //上面这个其实应该写在一起，用transaction搞定，暂时不想做太大的改动了
 
         return response()->json([
             'code' => 0
@@ -313,11 +348,16 @@ class ContestController extends Controller
     public function updateContestProblem(Request $request,int $contestId)
     {
         $validator = Validator::make($request->all(),[
-            'problem_ids' => 'required|array'
+            'problem_ids' => 'required|array',
+            'password' => 'required|string|min:6|max:20'
         ]);
 
         if($validator->fails())
             throw new FormValidatorException($validator->getMessageBag()->all());
+
+        //密码检查
+        if(!Utils::pwCheck($request->input('password'),$request->user->password))
+            throw new PasswordErrorException();
 
         //TODO 检查管理员权限
 
@@ -327,50 +367,6 @@ class ContestController extends Controller
         //拿到的是所有题目id的集合
         if(!$this->contestService->updateContestProblem($contestId,$request->problem_ids))
             throw new InnerError("Fail to update Problems in contest ".$contestId);
-
-        return response()->json([
-            'code' => 0
-        ]);
-    }
-
-    //更新题目，考虑到比赛可能正在进行，因此把 添加 和 移除操作 分开，逻辑更加清晰一些
-
-    public function AddProblemToContest(Request $request,int $contestId)
-    {
-        $validator = Validator::make($request->all(),[
-            'problems' => 'array'
-            //表单验证的内容是 题目信息。
-        ]);
-
-        if($validator->fails())
-            throw new FormValidatorException($validator->getMessageBag()->all());
-
-        //组装数据，这里对数据格式有所要求。
-        $problems = $request->problems;
-        //调用服务
-        if(!$this->contestService->addProblemToContest($contestId,$problems))
-            throw new InnerError("Fail to add problem");
-
-        return response()->json([
-           'code' => 0
-        ]);
-
-    }
-
-    public function RemoveProblemFromContest(Request $request,int $contestId)
-    {
-        $validator = Validator::make($request->all(),[
-            'problemNums' => 'array'
-            //输入数据只有题号。
-        ]);
-
-        if($validator->fails())
-            throw new FormValidatorException($validator->getMessageBag()->all());
-
-        $problemNums = $request->problemNums;
-
-        if(!$this->contestService->removeProblemFromContest($contestId,$problemNums))
-            throw new InnerError("Fail to remove problems");
 
         return response()->json([
             'code' => 0
@@ -400,7 +396,7 @@ class ContestController extends Controller
         $user = $this->userService->getUserById($group->creator_id,['password']);
 
         //验证密码
-        if(!Hash::check($request->input('password'),$user->password))
+        if(!Utils::pwCheck($request->input('password'),$user->password))
             throw new PasswordErrorException();
 
         if(!$this->contestService->deleteContest($contestId))

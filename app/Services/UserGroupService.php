@@ -398,7 +398,7 @@ class UserGroupService implements UserGroupServiceInterface
 
     public function getGroupNotices(int $groupId, int $page, int $size)
     {
-        return $this->noticeRepo->paginate($page,$size,['group_id' => $groupId]);
+        return $this->noticeRepo->paginate($page,$size,['group_id' => $groupId],['title','created_at']);
     }
 
     public function addNotice(int $groupId,array $data):bool
@@ -439,33 +439,20 @@ class UserGroupService implements UserGroupServiceInterface
         return $this->getSingleNotice($noticeId)!=null;
     }
 
-    /**
-     * 作业
-     */
-
-    public function getGroupHomeworksCount(int $groupId):int
+    public function getGroupsUserIn(int $userId)
     {
-        // TODO: Implement getGroupHomeworksCount() method.
+        $relations = $this->relationRepo->getBy('user_id',$userId,['group_id']);
+
+        $groupIds = [];
+
+        foreach ($relations as $relation)
+        {
+            $groupIds[] = $relation->group_id;
+        }
+
+        $groups = $this->userGroupRepo->getIn('id',$groupIds,['owner_name','owner_id','name','created_at']);
+
+        return $groups;
     }
-
-    public function getGroupHomeworks(int $groupId, int $start, int $size):array
-    {
-        // TODO: Implement getGroupHomeworks() method.
-    }
-
-    /**
-     * 考试
-     */
-    public function getGroupExamsCount(int $groupId):int
-    {
-        // TODO: Implement getGroupExamsCount() method.
-    }
-
-    public function getGroupExams(int $groupId, int $start, int $size):array
-    {
-        // TODO: Implement getGroupExams() method.
-    }
-
-
 
 }

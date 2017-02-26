@@ -9,6 +9,7 @@
 namespace NEUQOJ\Services;
 
 
+use Hamcrest\Util;
 use Illuminate\Support\Facades\DB;
 use NEUQOJ\Common\Utils;
 use NEUQOJ\Exceptions\NoPermissionException;
@@ -57,7 +58,7 @@ class ContestService implements ContestServiceInterface
     public function getContestIndex(int $userId = -1, int $groupId)
     {
         //检查权限
-        if(!$this->canUserAccessContest($userId,$groupId))
+        if($userId!=-1&&!$this->canUserAccessContest($userId,$groupId))
             throw new NoPermissionException();
 
         //获取基本信息
@@ -361,11 +362,10 @@ class ContestService implements ContestServiceInterface
         return $data;
     }
 
-    public function getStatus(int $groupId,int $page,int $size)
+    public function getStatus(int $groupId,int $page,int $size,array $conditions=[])
     {
-        $totalCount = $this->problemGroupService->getSolutionCount($groupId);
-        $data = $this->problemGroupService->getSolutions($groupId,$page,$size);
-        return ['data' => $data,'total_count' => $totalCount];
+        $data = $this->problemGroupService->getSolutions($groupId,$page,$size,$conditions);
+        return ['data' => $data];
     }
 
     public function isContestExist(int $groupId):bool
@@ -414,7 +414,7 @@ class ContestService implements ContestServiceInterface
 
         $data['problem_group_id'] = $groupId;
 
-        return $this->problemService->submitProblem($relation->problem_id,$data,$relation->problem_id);
+        return $this->problemService->submitProblem($relation->problem_id,$data,$relation->problem_num);
     }
 
     public function isUserContestCreator(int $userId, int $groupId): bool
@@ -461,7 +461,7 @@ class ContestService implements ContestServiceInterface
 
         if($admission!=null) return true;//已经有权限了
 
-        if(md5($password) != $group->password)
+        if(!Utils::pwCheck($password,$group->password))
             throw new PasswordErrorException();
 
         return $this->problemAdmissionRepo->insert(['user_id' => $userId,'problem_group_id'=>$groupId]) == 1;

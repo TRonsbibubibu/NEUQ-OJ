@@ -70,7 +70,6 @@ class ProblemGroupService implements ProblemGroupServiceInterface
 
         //计算语言掩码
         $data['langmask'] = $this->getLangMask($data['langmask']);
-        $data['problem_count'] = count($problems);
         //$problems数组传入时只存放有problem_id
 
         //合成题目id
@@ -184,9 +183,10 @@ class ProblemGroupService implements ProblemGroupServiceInterface
         return $this->solutionRepo->getWhereCount(['problem_group_id' => $groupId]);
     }
 
-    public function getSolutions(int $groupId,int $page=1,int $size=15)
+    public function getSolutions(int $groupId,int $page=1,int $size=15,array $conditions=[])
     {
-        return $this->solutionRepo->paginate($page,$size,['problem_group_id'=>$groupId]);
+        $conditions['problem_group_id'] = $groupId;
+        return $this->solutionRepo->paginate($page,$size,$conditions);
     }
 
     public function isUserGroupCreator(int $userId,int $groupId): bool

@@ -96,26 +96,16 @@ interface UserGroupServiceInterface
     function isNoticeExist(int $noticeId):bool;
 
     /*
-    *作业
-    */
-
-    function getGroupHomeworksCount(int $groupId):int;
-
-    function getGroupHomeworks(int $groupId,int $page,int $size):array;
-
-    /*
-    *考试
-    */
-
-    function getGroupExamsCount(int $groupId):int;
-
-    function getGroupExams(int $groupId,int $page,int $size):array;
-
-    /*
     *组成员部分
     */
 
     function getGroupMembers(int $groupId,int $page,int $size);
 
     function getGroupMembersCount(int $groupId):int;
+
+    /*
+     * 用户辅助函数
+     */
+    //获取某个用户加入的用户组列表
+    function getGroupsUserIn(int $userId);
 }
