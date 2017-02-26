@@ -39,8 +39,7 @@ class RoleService implements RoleServiceInterface
     {
 
         $arr = $this->UserRoleRepo->getBy('user_id',$userId,['role_id']);
-        $roleId = $this->RoleRepo->getBy('name',$role,['id'])->first();
-
+        $roleId = $this->RoleRepo->getBy('name',$role,['id'])->first()->id;
 
         foreach ($arr as $item) {
             if($item['role_id'] ==$roleId)
@@ -76,7 +75,7 @@ class RoleService implements RoleServiceInterface
 
         //创建事件，对数据库操作的有哪项失败的话就自动回滚
         DB::transaction(
-            function ()use($role,$data,$rid)
+            function ()use($role,$data,&$rid)
             {
                 $rid = $this->RoleRepo->insertWithId($role);
 
@@ -94,7 +93,7 @@ class RoleService implements RoleServiceInterface
                 $this->RolePrRepo->insert($relations);
             }
         );
-        dd($rid);
+
         return $rid;
     }
     /*
@@ -112,12 +111,14 @@ class RoleService implements RoleServiceInterface
             'user_id'=>$userId,
             'role_id'=>$roleId,
         );
-       if(!($this->UserRoleRepo->insert($data)))
-        return false;
 
+        DB::transaction(
+            function ()use($data){
+                $this->UserRoleRepo->insert($data);
+                $this->PriSer->givePrivilegeTo($data['user_id'],$data['role_id']);
+            }
+        );
 
-        if(!($this->PriSer->givePrivilegeTo($userId,$roleId)))
-            return false;
 
         return true;
     }
@@ -141,7 +142,7 @@ class RoleService implements RoleServiceInterface
         $flag = -1;
 
 
-        DB::transation(
+        DB::transaction(
             function ()use($role,$rolePr,$roleId)
             {
                 if($this->isRoleBelongTo($roleId))

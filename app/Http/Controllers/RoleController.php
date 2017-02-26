@@ -37,7 +37,7 @@ class RoleController extends Controller
             'role' => 'required|max:30',
             'privilegeId'=>'required',
             'description'=>'required|max:100',
-            'user'=>'required'
+            'userId'=>'required'
         ]);
 
 
@@ -58,7 +58,7 @@ class RoleController extends Controller
          * 判断操作者是否具有对应权限
          */
         //dd($request->user['id']);
-        if(!($privilegeService->hasNeededPrivilege('operate-role',$request->user['id'])))
+        if(!($privilegeService->hasNeededPrivilege('operate-role',$request->userId)))
             throw new PrivilegeNotExistException();
 
         //$privilege = $privilegeService->getPrivilegeDetailBy('id',$request->privilegeId,['name']);
@@ -80,7 +80,7 @@ class RoleController extends Controller
          */
         $validator = Validator::make($request->all(), [
             'role' => 'required|max:30',
-            'user'=>'required'
+            'userId'=>'required'
         ]);
 
         if($validator->fails())
@@ -117,8 +117,8 @@ class RoleController extends Controller
 
 
         $validator = Validator::make($request->all(), [
-            'user'=>'required',
-            'user_id' => 'required',
+            'operatorId'=>'required',
+            'userId' => 'required',
             'role'=>'required',
         ]);
 
@@ -128,6 +128,11 @@ class RoleController extends Controller
             throw new FormValidatorException($data);
         }
 
+        /*
+        * 判断操作者是否具有对应权限
+        */
+        if(!($privilegeService->hasNeededPrivilege('operate-role',$request->operatorId)))
+            throw new PrivilegeNotExistException();
 
         $role = $request->role;
 
@@ -137,14 +142,13 @@ class RoleController extends Controller
         if(!($roleService->roleExisted($role)))
             throw new RoleNotExistException();
 
-        /*
-         * 判断给予人是否有对应的权限
-         */
-        if(!($privilegeService->hasNeededPrivilege('operate-role',$request->user['id'])))
-            throw new PrivilegeNotExistException();
 
 
-         if($roleService->giveRoleTo($request->user_id,$role))
+
+        if(($roleService->hasRole($request->userId,$role)))
+            throw new RoleExistedException();
+
+         if($roleService->giveRoleTo($request->userId,$role))
          {
              return response()->json(
                  [
@@ -157,6 +161,18 @@ class RoleController extends Controller
 
     public function updateRole(Request $request,RoleService $roleService)
     {
+        $validator = Validator::make($request->all(), [
+            'roleId'=>'required',
+            'name' => 'required',
+            'description'=>'required',
+        ]);
+
+        if($validator->fails())
+        {
+            $data = $validator->getMessageBag()->all();
+            throw new FormValidatorException($data);
+        }
+
         if($roleService->updateRole(['id'=>$request->id],['name'=>$request->name,'description'=>$request->description]))
             return response()->json(
                 ['code'=>0]

@@ -52,25 +52,31 @@ class PrivilegeService
         $arr = $this->getRolePrivilege($roleId,['privilege_id']);
 
         $content = [];
+        //dd($privilege);
+
         foreach ($arr as $item)
         {
+            $flag = 0;
             foreach ($privilege as $pitem)
             {
 
                 if($pitem['privilege_id'] == $item['privilege_id'])
-                    continue;
-
+                    $flag = 1;
             }
             /*
-           * 给予的新角色含有原有的权限 就跳过这次插入
+           * 给予的新角色含有原有的权限 就标注
            */
-            array_push($content,[
-                'user_id'=>$userId,
-                'privilege_id'=>$item['privilege_id']
-            ]);
+            //dd($pitem);
+            if($flag == 0)
+            {
+                array_push($content,[
+                    'user_id'=>$userId,
+                    'privilege_id'=>$item['privilege_id']
+                ]);
+            }
+
 
         }
-
 
         if(!($this->userPriRepo->insert($content)))
             return false;

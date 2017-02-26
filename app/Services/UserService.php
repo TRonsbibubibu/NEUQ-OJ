@@ -174,7 +174,7 @@ class UserService implements UserServiceInterface
         ];
 
         $id = $this->userRepo->insertWithId($user);
-
+//        dd($id);
         return $id;
     }
 
