@@ -21,6 +21,7 @@ class DiscussionController extends Controller
         $this->discussionService = $discussionService;
     }
 
+
     //topic控制
     public function addTopic(Request $request)
     {
@@ -169,6 +170,26 @@ class DiscussionController extends Controller
                 ],
             ]);
         }
+    }
+
+    public function deleteReply(Request $request, $replyId)
+    {
+        $userId = $request->user->id;
+        $replyId = intval($replyId);
+        $topic = $this->discussionService->searchTopicById($replyId);
+
+        //检查是否为一个reply
+        if(!$this->discussionService->isReply($replyId))
+            throw new InnerError("This is not a reply");
+
+        //检查是否为回复人
+        if(!$this->discussionService->isCreator($replyId,$userId) && !$this->discussionService->isCreator($topic->id,$userId))
+            throw new InnerError("You have no privilege to do that");
+
+        if($this->discussionService->deleteReply($replyId))
+            return response()->json([
+                'code' => 0
+            ]);
     }
 
 

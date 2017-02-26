@@ -10,13 +10,15 @@ namespace NEUQOJ\Services\Contracts;
 
 interface DiscussionServiceInterface
 {
-    function isTopicCreator(int $topicId,int $userId):bool;
+    function isCreator(int $topicId,int $userId):bool;
+
+    function isReply(int $topicId):bool;
 
     function addTopic(array $data):bool;
 
     function deleteTopic(int $topicId):bool;
 
-    function updateTopic(int $topicId , array $condition):bool;
+    function updateTopic(int $topicId ,array $condition):bool;
 
     /**
      * 查找 ，暂定为全局，不分题号
@@ -25,6 +27,8 @@ interface DiscussionServiceInterface
 //    function searchTopicByAuthor(string $authorName);
 //
 //    function searchTopicByTitle(string $title);
+
+    function searchTopicById(int $topicId);
 
     function searchTopicByTitle(string $title,int $page = 1,int $size = 15);
 
@@ -35,6 +39,8 @@ interface DiscussionServiceInterface
      */
 
     function addReply(int $father , array $condition):bool;
+
+    function deleteReply(int $replyId):bool;
 
     /**
      * 置顶

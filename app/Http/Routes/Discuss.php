@@ -14,6 +14,7 @@ Route::group(['middleware' => 'token'], function() {
     Route::post('/topic/update/{id}','DiscussionController@updateTopic');
 
     Route::post('/reply/create/{father}','DiscussionController@addReply');
+    Route::post('/reply/delete/{id}','DiscussionController@deleteReply');
 
     Route::post('/topic/stick/{id}','DiscussionController@stick');
     Route::post('/topic/unstick/{id}','DiscussionController@unstick');

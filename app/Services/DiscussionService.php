@@ -28,10 +28,19 @@ class DiscussionService implements DiscussionServiceInterface
      * 辅助方法
      */
 
-    public function isTopicCreator(int $topicId,int $userId): bool
+    public function isCreator(int $topicId,int $userId): bool
     {
         $topic = $this->discussionRepo->get($topicId)->first();
         if($userId == $topic->user_id)
+            return true;
+        else
+            return false;
+    }
+
+    public function isReply(int $topicId): bool
+    {
+        $topic = $this->discussionRepo->get($topicId)->first();
+        if($topic->title == null)
             return true;
         else
             return false;
@@ -67,6 +76,12 @@ class DiscussionService implements DiscussionServiceInterface
 //        }
 //    }
 //
+
+    public function searchTopicById(int $topicId)
+    {
+        return $this->discussionRepo->get($topicId)->first();
+    }
+
     public function searchTopicCount(string $title): int
     {
         $pattern = '%'.$title.'%';//在这里定义模式串
@@ -89,6 +104,11 @@ class DiscussionService implements DiscussionServiceInterface
     {
         $condition['father'] = $father;
         return $this->discussionRepo->insert($condition);
+    }
+
+    public function deleteReply(int $replyId): bool
+    {
+        return $this->discussionRepo->deleteWhere(['id' => $replyId]) == 1;
     }
 
     /**
